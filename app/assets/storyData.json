@@ -1,0 +1,28 @@
+[
+  {
+    "id": 1,
+    "title": "Denied Entry at a Temple",
+    "story": [
+      "Ravi, a young man, visits a temple with his friends.",
+      "But the guard stops him, saying people from his caste are not allowed.",
+      "Ravi feels insulted and leaves silently, wondering what went wrong."
+    ],
+    "question": "Which fundamental right is violated in this story?",
+    "options": ["Right to Equality", "Right to Freedom", "Right to Religion", "Right to Education"],
+    "correct": "Right to Equality",
+    "law": "Article 15: Prohibition of discrimination on grounds of religion, race, caste, sex or place of birth."
+  },
+  {
+    "id": 2,
+    "title": "Arrested for a Tweet",
+    "story": [
+      "Anita tweets about a recent government policy, sharing her opinion peacefully.",
+      "The next day, the police arrive at her house and arrest her without a warrant.",
+      "She is scared and confused because she only expressed her opinion online."
+    ],
+    "question": "Which right is violated here?",
+    "options": ["Right to Freedom of Speech", "Right to Privacy", "Right Against Exploitation", "Right to Constitutional Remedies"],
+    "correct": "Right to Freedom of Speech",
+    "law": "Article 19(1)(a): Freedom of speech and expression."
+  }
+]
