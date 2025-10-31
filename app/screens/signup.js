@@ -1,29 +1,66 @@
-// app/screens/signup.js
-import React, { useState } from "react";
-import { View, TextInput, Button, StyleSheet, Text, Image, TouchableOpacity, Alert } from "react-native";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../firebase";
 import { useRouter } from "expo-router";
+import { useState } from "react";
+import {
+  Alert,
+  Image, // Although not used, keeping in case you decide to switch
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from "react-native";
+
+// ⚠️ IMPORTANT: Update this constant with your computer's local IP address and Express port.
+// Example: 'http://10.44.114.8:3000'
+const BASE_URL = 'http://10.44.114.8:5000';
 
 export default function Signup() {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
 
   const handleSignup = async () => {
-    if (!email || !password) {
-      Alert.alert("Error", "Please enter email and password");
+    // Basic client-side validation
+    if (!name || !email || !password) {
+      Alert.alert("Missing Fields", "Please enter your name, email, and password.");
       return;
     }
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      console.log("✅ User registered:", userCredential.user);
-      Alert.alert("Account created successfully!");
-      router.replace("/screens/login");
+      const response = await fetch(`${BASE_URL}/api/users/signup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // HTTP status 200-299: Registration successful
+        console.log("✅ User registered:", data.user);
+        Alert.alert("Success", "Account created successfully!");
+        // Navigate to the login screen
+        router.replace("/screens/login"); 
+      } else {
+        // Server returned an error (e.g., status 409 Conflict, 400 Bad Request)
+        console.log("❌ Signup failed response:", data.message);
+        Alert.alert("Signup failed", data.message || "An error occurred on the server.");
+      }
+
     } catch (error) {
-      console.log("❌ Signup error:", error.message);
-      Alert.alert("Signup failed", error.message);
+      // Network error (e.g., server is not running, IP address is wrong)
+      console.error("❌ Network Error:", error.message);
+      Alert.alert(
+        "Connection Error", 
+        `Could not connect to the backend. Please ensure your Express server is running at ${BASE_URL}.`
+      );
     }
   };
 
@@ -35,11 +72,19 @@ export default function Signup() {
       <Text style={styles.title}>Create Account</Text>
       
       <TextInput
+        placeholder="Full Name"
+        value={name}
+        onChangeText={setName}
+        style={styles.input}
+      />
+      
+      <TextInput
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
         style={styles.input}
         keyboardType="email-address"
+        autoCapitalize="none" // Prevent auto-capitalizing email input
       />
       <TextInput
         placeholder="Password"

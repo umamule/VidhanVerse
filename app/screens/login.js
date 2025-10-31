@@ -1,9 +1,11 @@
 // app/screens/login.js
-import React, { useState } from "react";
-import { View, TextInput, Button, StyleSheet, Text, Image, TouchableOpacity, Alert } from "react-native";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../firebase";
 import { useRouter } from "expo-router";
+import { useState } from "react";
+import { Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+
+// ⚠️ IMPORTANT: Update this constant with your computer's local IP address and Express port.
+// Example: 'http://10.44.114.8:5000'
+const BASE_URL = 'http://10.44.114.8:5000';
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -17,12 +19,38 @@ export default function Login() {
     }
 
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      console.log("✅ User logged in:", userCredential.user);
-      router.replace("/screens/HomeScreen");
+      const response = await fetch(`${BASE_URL}/api/users/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // HTTP status 200: Login successful
+        console.log("✅ User logged in:", data.user);
+        Alert.alert("Success", "Login successful!");
+        // Navigate to the home screen
+        router.replace("/screens/HomeScreen");
+      } else {
+        // Server returned an error (e.g., status 401 Unauthorized)
+        console.log("❌ Login failed response:", data.message);
+        Alert.alert("Login failed", data.message || "An error occurred on the server.");
+      }
+
     } catch (error) {
-      console.log("❌ Login error:", error.message);
-      Alert.alert("Login failed", error.message);
+      // Network error (e.g., server is not running, IP address is wrong)
+      console.error("❌ Network Error:", error.message);
+      Alert.alert(
+        "Connection Error",
+        `Could not connect to the backend. Please ensure your Express server is running at ${BASE_URL}.`
+      );
     }
   };
 

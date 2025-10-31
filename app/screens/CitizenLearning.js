@@ -1,9 +1,9 @@
 // app/screens/CitizenLearning.js
-import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import Animated, { FadeInUp, BounceIn } from "react-native-reanimated";
+import { useState } from "react";
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import Animated, { FadeInUp } from "react-native-reanimated";
 
 const CitizenLearning = () => {
   const router = useRouter();
