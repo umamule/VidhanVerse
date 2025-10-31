@@ -1,13 +1,15 @@
-// app/screens/CitizenLearning.js
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Animated, { FadeInUp } from "react-native-reanimated";
 
 const CitizenLearning = () => {
   const router = useRouter();
   const [showLessons, setShowLessons] = useState(false);
+  const [showGames, setShowGames] = useState(false);
 
   const [lessons, setLessons] = useState([
     { id: 1, title: "Right to Equality (Article 14)", desc: "Equality before law", unlocked: true, completed: false },
@@ -15,6 +17,45 @@ const CitizenLearning = () => {
     { id: 3, title: "Right Against Exploitation (Article 23)", desc: "Protection from exploitation", unlocked: false, completed: false },
     { id: 4, title: "Right to Constitutional Remedies (Article 32)", desc: "Enforcing fundamental rights", unlocked: false, completed: false },
   ]);
+
+  const loadProgress = useCallback(async () => {
+    try {
+      const userId = await AsyncStorage.getItem('userId');
+      if (userId) {
+        const response = await fetch(`http://10.44.114.8:5000/api/users/progress/${userId}`);
+        const data = await response.json();
+        if (data.progress) {
+          const { lessonsCompleted, quizzesCompleted, quizScores } = data.progress;
+          setLessons(prev => prev.map(lesson => ({
+            ...lesson,
+            completed: lessonsCompleted.includes(lesson.id),
+            unlocked: lesson.id === 1 || lessonsCompleted.includes(lesson.id - 1),
+            score: quizScores ? quizScores[lesson.id] : null
+          })));
+        }
+      }
+    } catch (error) {
+      console.error('Error loading progress:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadProgress();
+  }, [loadProgress]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadProgress();
+    }, [loadProgress])
+  );
+
+  const games = [
+    { id: 1, title: "Multiple Choice Quiz", desc: "Test your knowledge with questions", route: "QuizScreen" },
+    { id: 2, title: "True/False Challenge", desc: "Quick true or false questions", route: "TrueFalseScreen" },
+    { id: 3, title: "Matching Game", desc: "Match rights with descriptions", route: "MatchingScreen" },
+    { id: 4, title: "Scenario Decision", desc: "Make decisions in real scenarios", route: "ScenarioScreen" },
+    { id: 5, title: "Flashcard Review", desc: "Review key concepts with flashcards", route: "FlashcardScreen" },
+  ];
 
   const completeLesson = (id) => {
     setLessons((prev) =>
@@ -27,6 +68,10 @@ const CitizenLearning = () => {
       )
     );
     router.push(`/screens/QuizScreen?id=${id}`);
+  };
+
+  const selectGame = (game) => {
+    router.push(`/screens/${game.route}?id=1`);
   };
 
   return (
@@ -64,6 +109,26 @@ const CitizenLearning = () => {
             <Text style={styles.startButtonText}>Start Learning</Text>
           </TouchableOpacity>
         </Animated.View>
+      ) : showGames ? (
+        <View style={styles.lessonSection}>
+          <Text style={styles.sectionTitle}>Choose a Game for Lesson 1</Text>
+          {games.map((game, index) => (
+            <Animated.View key={game.id} entering={FadeInUp.delay(index * 150)}>
+              <TouchableOpacity
+                style={styles.lessonItem}
+                onPress={() => selectGame(game)}
+              >
+                <LinearGradient
+                  colors={["#E8F5E9", "#C8E6C9"]}
+                  style={styles.lessonGradient}
+                >
+                  <Text style={styles.lessonText}>🎮 {game.title}</Text>
+                  <Text style={styles.lessonSub}>{game.desc}</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </Animated.View>
+          ))}
+        </View>
       ) : (
         <View style={styles.lessonSection}>
           <Text style={styles.sectionTitle}>Lessons</Text>
@@ -76,7 +141,7 @@ const CitizenLearning = () => {
                   lesson.completed && { borderColor: "#4CAF50", borderWidth: 2 },
                 ]}
                 disabled={!lesson.unlocked}
-                onPress={() => completeLesson(lesson.id)}
+                onPress={lesson.id === 1 ? () => setShowGames(true) : () => completeLesson(lesson.id)}
               >
                 <LinearGradient
                   colors={

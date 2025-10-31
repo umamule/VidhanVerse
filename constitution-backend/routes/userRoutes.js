@@ -91,13 +91,58 @@ router.post('/login', async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        id: user._id
+        id: user._id,
+        progress: user.progress
       }
     });
 
   } catch (error) {
     console.error('Login error:', error.message);
     res.status(500).json({ message: 'Internal server error during login.' });
+  }
+});
+
+// GET /api/users/progress/:userId
+router.get('/progress/:userId', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId).select('progress');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    const progress = {
+      lessonsCompleted: user.progress.lessonsCompleted,
+      quizzesCompleted: user.progress.quizzesCompleted,
+      quizScores: Object.fromEntries(user.progress.quizScores)
+    };
+    res.json({ progress });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching progress' });
+  }
+});
+
+// PUT /api/users/progress/:userId
+router.put('/progress/:userId', async (req, res) => {
+  const { lessonsCompleted, quizzesCompleted, quizScores } = req.body;
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    if (lessonsCompleted !== undefined) user.progress.lessonsCompleted = lessonsCompleted;
+    if (quizzesCompleted !== undefined) user.progress.quizzesCompleted = quizzesCompleted;
+    if (quizScores) {
+      for (const [key, value] of Object.entries(quizScores)) {
+        user.progress.quizScores.set(key, value);
+      }
+      user.markModified('progress.quizScores');
+    }
+
+    await user.save();
+    const progress = {
+      lessonsCompleted: user.progress.lessonsCompleted,
+      quizzesCompleted: user.progress.quizzesCompleted,
+      quizScores: Object.fromEntries(user.progress.quizScores)
+    };
+    res.json({ message: 'Progress updated', progress });
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating progress' });
   }
 });
 
