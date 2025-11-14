@@ -1,11 +1,12 @@
 // app/screens/login.js
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 // ⚠️ IMPORTANT: Update this constant with your computer's local IP address and Express port.
 // Example: 'http://10.44.114.8:5000'
-const BASE_URL = 'http://10.44.114.8:5000';
+const BASE_URL = 'http://10.250.96.8:5000';
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -35,6 +36,9 @@ export default function Login() {
       if (response.ok) {
         // HTTP status 200: Login successful
         console.log("✅ User logged in:", data.user);
+        // Store token in AsyncStorage
+        await AsyncStorage.setItem('token', data.token);
+        await AsyncStorage.setItem('user', JSON.stringify(data.user));
         Alert.alert("Success", "Login successful!");
         // Navigate to the home screen
         router.replace("/screens/HomeScreen");

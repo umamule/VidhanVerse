@@ -12,7 +12,7 @@ import {
 
 // ⚠️ IMPORTANT: Update this constant with your computer's local IP address and Express port.
 // Example: 'http://10.44.114.8:3000'
-const BASE_URL = 'http://10.44.114.8:5000';
+const BASE_URL = 'http://10.250.96.8:5000';
 
 export default function Signup() {
   const [name, setName] = useState("");

@@ -1,11 +1,10 @@
 // app/screens/HomeScreen.js
-import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
-import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
-import Animated, { FadeInUp, BounceIn } from "react-native-reanimated";
+import { useRouter } from "expo-router";
 import { signOut } from "firebase/auth";
-import { auth } from "../../firebase";  // adjust path if needed
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import Animated, { BounceIn, FadeInUp } from "react-native-reanimated";
+import { auth } from "../../firebase"; // adjust path if needed
 
 export default function HomeScreen() {
   const router = useRouter();
